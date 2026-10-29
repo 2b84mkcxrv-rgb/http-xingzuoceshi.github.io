@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>测一测你更符合哪个星座 · 星座人格测试</title>
+<style>
+  :root{
+    --bg:#0b0e1a; --bg2:#121733; --card:rgba(255,255,255,.06);
+    --line:rgba(255,255,255,.12); --txt:#eef1ff; --sub:#9aa3c7;
+    --gold:#e9c46a; --violet:#a78bfa; --accent:#7c6cff;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",Segoe UI,Roboto,sans-serif;
+    background:radial-gradient(1200px 800px at 50% -10%,#1b2150 0%,var(--bg) 55%) fixed,var(--bg);
+    color:var(--txt);min-height:100dvh;overflow-x:hidden;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .star{position:absolute;background:#fff;border-radius:50%;opacity:.5;animation:tw 3s infinite ease-in-out}
+  @keyframes tw{0%,100%{opacity:.15}50%{opacity:.8}}
+  .wrap{position:relative;z-index:1;max-width:520px;margin:0 auto;padding:24px 18px calc(40px + env(safe-area-inset-bottom));min-height:100dvh;display:flex;flex-direction:column}
+  .view{display:none;flex:1;flex-direction:column;justify-content:center;animation:fade .5s ease}
+  .view.on{display:flex}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* HOME */
+  .badge{display:inline-block;font-size:12px;letter-spacing:3px;color:var(--gold);border:1px solid rgba(233,196,106,.4);padding:5px 14px;border-radius:999px;margin-bottom:18px}
+  h1{font-size:30px;font-weight:800;margin:0 0 10px;letter-spacing:1px;background:linear-gradient(120deg,#fff,#e9c46a 60%,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);font-size:15px;margin:0 0 22px}
+  .wheel{position:relative;width:230px;height:230px;margin:6px auto 26px}
+  .wheel .sym{position:absolute;transform:translate(-50%,-50%);font-size:26px;filter:drop-shadow(0 0 6px rgba(255,255,255,.25))}
+  .wheel .core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center}
+  .wheel .core b{font-size:13px;color:var(--gold);letter-spacing:2px}
+  .wheel .core span{display:block;font-size:11px;color:var(--sub);margin-top:2px}
+  .ch{display:flex;gap:14px;margin-top:6px}
+  .ch-btn{flex:1;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 14px;text-align:left;cursor:pointer;transition:.2s;color:var(--txt)}
+  .ch-btn:active{transform:scale(.97)}
+  .ch-btn .ic{font-size:24px}
+  .ch-btn h3{margin:8px 0 4px;font-size:17px}
+  .ch-btn p{margin:0;font-size:12.5px;color:var(--sub)}
+  .ch-btn.simple{border-color:rgba(124,108,255,.5);box-shadow:0 10px 30px -16px rgba(124,108,255,.8)}
+  .ch-btn.complex{border-color:rgba(233,196,106,.5);box-shadow:0 10px 30px -16px rgba(233,196,106,.7)}
+  .note{margin-top:22px;font-size:12px;color:#6b7396;text-align:center;line-height:1.7}
+
+  /* QUIZ */
+  .topbar{display:flex;align-items:center;gap:12px;margin-bottom:22px}
+  .back{background:none;border:none;color:var(--sub);font-size:22px;cursor:pointer;padding:4px 6px;line-height:1}
+  .prog{flex:1;height:8px;background:rgba(255,255,255,.1);border-radius:999px;overflow:hidden}
+  .prog>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--violet),var(--gold));border-radius:999px;transition:width .35s ease}
+  .qcount{font-size:13px;color:var(--sub);white-space:nowrap}
+  .qnum{font-size:13px;letter-spacing:2px;color:var(--gold);margin-bottom:8px}
+  .qtext{font-size:21px;font-weight:700;margin:0 0 22px;line-height:1.5}
+  .opts{display:flex;flex-direction:column;gap:12px}
+  .opt{display:flex;align-items:center;gap:14px;padding:16px 16px;border:1.5px solid var(--line);border-radius:16px;background:var(--card);cursor:pointer;transition:.18s;font-size:15.5px}
+  .opt .dot{flex:none;width:22px;height:22px;border-radius:50%;border:2px solid var(--sub);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--sub);transition:.18s}
+  .opt.sel{border-color:var(--gold);background:rgba(233,196,106,.12)}
+  .opt.sel .dot{border-color:var(--gold);background:var(--gold);color:#1a1530}
+  .opt:active{transform:scale(.99)}
+
+  /* RESULT */
+  .r-card{background:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:24px;padding:26px 22px;text-align:center;box-shadow:0 30px 60px -30px rgba(0,0,0,.6)}
+  .r-sym{font-size:78px;line-height:1;margin:6px 0 2px;filter:drop-shadow(0 0 18px rgba(255,255,255,.3));animation:pop .6s cubic-bezier(.2,1.4,.4,1)}
+  @keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+  .r-name{font-size:26px;font-weight:800;margin:4px 0 2px}
+  .r-en{font-size:13px;letter-spacing:3px;color:var(--sub);text-transform:uppercase}
+  .r-meta{display:flex;justify-content:center;gap:10px;margin:12px 0 4px;flex-wrap:wrap}
+  .tag{font-size:12px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);color:var(--sub)}
+  .tag.e{color:#fff;font-weight:600}
+  .r-desc{font-size:14.5px;color:#d7dcf5;margin:16px 4px 4px;text-align:left;line-height:1.75}
+  .r-sec{text-align:left;margin:18px 4px 0}
+  .r-sec h4{font-size:13px;color:var(--gold);letter-spacing:1px;margin:0 0 10px;display:flex;align-items:center;gap:8px}
+  .r-sec h4::before{content:"";width:4px;height:14px;background:var(--gold);border-radius:2px;display:inline-block}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{font-size:12.5px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.07);border:1px solid var(--line);color:#e7eaff}
+  .bars{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+  .bar{display:flex;align-items:center;gap:10px;font-size:13px}
+  .bar .nm{width:62px;flex:none;color:#cfd5f5}
+  .bar .track{flex:1;height:9px;background:rgba(255,255,255,.1);border-radius:999px;overflow:hidden}
+  .bar .track>i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,var(--violet),var(--gold));width:0;transition:width .9s ease}
+  .bar .pc{width:42px;flex:none;text-align:right;color:var(--sub)}
+  .advice{font-size:14px;color:#d7dcf5;background:rgba(124,108,255,.1);border-left:3px solid var(--violet);padding:12px 14px;border-radius:10px;line-height:1.7}
+  .acts{display:flex;gap:10px;margin-top:22px}
+  .btn{flex:1;padding:14px;border:none;border-radius:14px;font-size:15px;font-weight:700;cursor:pointer;transition:.18s;color:#fff}
+  .btn:active{transform:scale(.98)}
+  .btn.primary{background:linear-gradient(135deg,var(--accent),var(--violet))}
+  .btn.ghost{background:rgba(255,255,255,.08);border:1px solid var(--line);color:var(--txt)}
+  .foot{text-align:center;font-size:11.5px;color:#5c6390;margin-top:24px;line-height:1.7}
+  .toast{position:fixed;left:50%;bottom:40px;transform:translateX(-50%) translateY(20px);background:#1c2142;border:1px solid var(--line);color:#fff;padding:10px 18px;border-radius:12px;font-size:13px;opacity:0;transition:.3s;z-index:50;pointer-events:none}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div id="stars"></div>
+<div class="wrap">
+
+  <!-- HOME -->
+  <section id="view-home" class="view on">
+    <div style="text-align:center">
+      <span class="badge">ZODIAC · 星座人格测试</span>
+      <h1>测一测你<br>更符合哪个星座</h1>
+      <p class="lead">12 道潜意识画像，定位你灵魂里最像的那一个星座。<br>两种通道，按你的耐心自选。</p>
+      <div class="wheel" id="wheel">
+        <div class="core"><b>12 星座</b><span>你的内在原型</span></div>
+      </div>
+      <div class="ch">
+        <button class="ch-btn simple" onclick="start('simple')">
+          <div class="ic">⚡</div><h3>简单通道</h3><p>10 题 · 3 分钟速测</p>
+        </button>
+        <button class="ch-btn complex" onclick="start('complex')">
+          <div class="ic">🔮</div><h3>复杂通道</h3><p>30 题 · 深度画像</p>
+        </button>
+      </div>
+      <p class="note">本测试为娱乐向人格画像，结果无对错之分。<br>完成后可生成专属星座卡片保存分享。</p>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section id="view-quiz" class="view">
+    <div class="topbar">
+      <button class="back" onclick="goHome()">‹</button>
+      <div class="prog"><i id="progBar"></i></div>
+      <div class="qcount" id="qcount">1/7</div>
+    </div>
+    <div class="qnum" id="qnum">QUESTION 01</div>
+    <h2 class="qtext" id="qtext">题目</h2>
+    <div class="opts" id="opts"></div>
+  </section>
+
+  <!-- RESULT -->
+  <section id="view-result" class="view">
+    <div class="r-card" id="rCard"></div>
+    <div class="acts">
+      <button class="btn ghost" onclick="goHome()">再测一次</button>
+      <button class="btn primary" onclick="downloadCard()">保存星座卡片</button>
+    </div>
+    <p class="foot">本页为纯静态网页，可一键部署到 GitHub Pages。<br>愿你在星辰里，看见自己。</p>
+  </section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- 星座数据 ---------- */
+const SIGNS = [
+  {id:'aries',name:'白羊座',en:'Aries',sym:'♈',elem:'火',date:'3.21–4.19',c1:'#ff7a5c',c2:'#ff4e6a',
+   desc:'你是天生的开拓者，行动力爆表，想到就去做。热情直率、不绕弯子，是人群里最先举手的那个。偶尔因为太急，容易忽略细节或后劲不足。',
+   traits:['行动力','热情直率','敢为人先','急性子'],
+   advice:'把"先做完再完善"和"先想清楚"结合一下，你的冲劲会更有后劲。'},
+  {id:'taurus',name:'金牛座',en:'Taurus',sym:'♉',elem:'土',date:'4.20–5.20',c1:'#e6b35c',c2:'#b07a3c',
+   desc:'你稳得像块定海神针。看重质感与安全感，慢热但长情，认定的事会闷头做到底。审美在线，懂得享受生活的小确幸。',
+   traits:['稳定靠谱','务实','审美在线','慢热长情'],
+   advice:'偶尔跳出舒适区，变化未必是威胁，也可能是惊喜。'},
+  {id:'gemini',name:'双子座',en:'Gemini',sym:'♊',elem:'风',date:'5.21–6.21',c1:'#6fd3ff',c2:'#5b8def',
+   desc:'你的大脑是永动机，信息、人、新鲜事都能点燃你。能说会道、适应力强，是聚会里的气氛担当。但兴趣转移也快，深度需要刻意经营。',
+   traits:['好奇健谈','适应力强','点子多','三分钟热度'],
+   advice:'给兴趣一点"沉淀期"，你会从"懂一点"变成"真的擅长"。'},
+  {id:'cancer',name:'巨蟹座',en:'Cancer',sym:'♋',elem:'水',date:'6.22–7.22',c1:'#5fe0c8',c2:'#46b3d9',
+   desc:'你心里装着一座柔软的港湾。共情力极强，重视家人朋友与归属感，谁的情绪你都能接住。念旧、护短，是人群里最暖的那一个。',
+   traits:['共情力强','重感情','念旧顾家','敏感细腻'],
+   advice:'照顾别人之余，也别忘了给自己的情绪留个出口。'},
+  {id:'leo',name:'狮子座',en:'Leo',sym:'♌',elem:'火',date:'7.23–8.22',c1:'#ff7a5c',c2:'#ff4e6a',
+   desc:'你自带聚光灯。自信、慷慨、有领导力，喜欢被看见也被需要。讲义气、护短，是朋友眼里的"主心骨"。偶尔需要被夸，这很正常。',
+   traits:['自信大方','领导力','慷慨仗义','需要被认可'],
+   advice:'把"想被看见"转化为"带大家赢"，你的光芒会更稳。'},
+  {id:'virgo',name:'处女座',en:'Virgo',sym:'♍',elem:'土',date:'8.23–9.22',c1:'#e6b35c',c2:'#b07a3c',
+   desc:'你是细节的守门人。逻辑清晰、追求条理，做事靠谱到让人安心。善于分析与改良，是天然的"问题终结者"。但别让完美主义拖慢出发。',
+   traits:['严谨细致','逻辑强','追求完美','服务精神'],
+   advice:'完成优于完美，先跑起来再迭代，你会更轻松。'},
+  {id:'libra',name:'天秤座',en:'Libra',sym:'♎',elem:'风',date:'9.23–10.23',c1:'#6fd3ff',c2:'#5b8def',
+   desc:'你是关系里的平衡术士。审美在线、讲究分寸，讨厌冲突、追求和谐。善于换位思考，是公认的"高情商"。但别因为怕得罪人而总委屈自己。',
+   traits:['优雅和谐','高情商','审美在线','优柔寡断'],
+   advice:'平衡他人与自我，你的"公平"要先对自己生效。'},
+  {id:'scorpio',name:'天蝎座',en:'Scorpio',sym:'♏',elem:'水',date:'10.24–11.22',c1:'#5fe0c8',c2:'#46b3d9',
+   desc:'你拥有一眼见底的深度。直觉敏锐、爱憎分明，一旦认定就全情投入。神秘、专注、洞察力强，是人群中读空气最准的那个。',
+   traits:['洞察力强','专注深情','直觉敏锐','外冷内热'],
+   advice:'适度卸下防备，信任本身也是一种力量。'},
+  {id:'sagittarius',name:'射手座',en:'Sagittarius',sym:'♐',elem:'火',date:'11.23–12.21',c1:'#ff7a5c',c2:'#ff4e6a',
+   desc:'你是永远在路上的探险家。热爱自由、乐观豁达，对未知充满好奇。爱旅行、爱哲思，是朋友眼里的"快乐源泉"。但别让"自由"变成逃避承诺的借口。',
+   traits:['热爱自由','乐观豁达','求知欲强','有点飘'],
+   advice:'把洒脱和责任心打包，你既能看世界也能守住人。'},
+  {id:'capricorn',name:'摩羯座',en:'Capricorn',sym:'♑',elem:'土',date:'12.22–1.19',c1:'#e6b35c',c2:'#b07a3c',
+   desc:'你是沉默的山峰。目标感极强、自律坚韧，愿意为长远结果延迟满足。靠谱、有担当，是团队里最让人放心的那一个。记得偶尔也奖励自己。',
+   traits:['目标感强','自律坚韧','靠谱担当','略显严肃'],
+   advice:'努力之余给自己松松绑，松弛的你效率反而更高。'},
+  {id:'aquarius',name:'水瓶座',en:'Aquarius',sym:'♒',elem:'风',date:'1.20–2.18',c1:'#6fd3ff',c2:'#5b8def',
+   desc:'你是来自未来的独立思考者。脑洞清奇、重视理念与自由，不随大流、有自己的价值排序。友善但保有距离感，是群体里的"异类天才"。',
+   traits:['独立思考','脑洞大','重视自由','有点疏离'],
+   advice:'你的独特是天赋，偶尔落地到具体行动，影响力会更大。'},
+  {id:'pisces',name:'双鱼座',en:'Pisces',sym:'♓',elem:'水',date:'2.19–3.20',c1:'#5fe0c8',c2:'#46b3d9',
+   desc:'你是温柔的造梦师。想象力丰富、共情力满格，自带艺术与灵性气质。善解人意、不计较，是世界里最柔软的存在。记得分清"别人的情绪"和"自己的课题"。',
+   traits:['想象丰富','共情满格','艺术气质','容易心软'],
+   advice:'温柔也要有边界，先安顿好自己才能更好照亮别人。'}
+];
+const ELEM_COLOR={'火':['#ff7a5c','#ff4e6a'],'土':['#e6b35c','#b07a3c'],'风':['#6fd3ff','#5b8def'],'水':['#5fe0c8','#46b3d9']};
+
+/* ---------- 题库（复杂 15 题，简单取前 7 题）---------- */
+const QUESTIONS=[
+ {q:'面对一个全新的挑战，你通常会？',o:[
+   {t:'立刻行动，边做边想',s:{0:3}},
+   {t:'先列计划，再稳步推进',s:{9:3,4:1}},
+   {t:'拉上朋友一起头脑风暴',s:{2:3,10:1}},
+   {t:'先问自己内心到底想不想要',s:{3:2,11:2}}]},
+ {q:'理想中的周末状态是？',o:[
+   {t:'出门冒险、运动出一身汗',s:{8:3,0:1}},
+   {t:'宅家整理房间、做手工',s:{4:3,1:1}},
+   {t:'约朋友逛街、聊天',s:{6:3,2:1}},
+   {t:'一个人发呆、看电影',s:{11:3,7:1}}]},
+ {q:'朋友向你倾诉烦恼，你会？',o:[
+   {t:'直接给办法，催他行动',s:{0:2,4:2}},
+   {t:'静静听，共情他的情绪',s:{3:3,11:1}},
+   {t:'帮他分析利弊、列清单',s:{4:3,6:1}},
+   {t:'陪他一起吐槽世界不公',s:{7:3,10:1}}]},
+ {q:'做决定时，你更靠？',o:[
+   {t:'直觉和冲动',s:{0:2,11:2}},
+   {t:'逻辑和数据',s:{4:3,10:1}},
+   {t:'他人感受与氛围',s:{6:2,3:2}},
+   {t:'长远目标与野心',s:{9:3,4:1}}]},
+ {q:'别人眼中的你，更接近？',o:[
+   {t:'精力旺盛的行动派',s:{0:2,8:2}},
+   {t:'靠谱稳重的实干家',s:{1:2,9:2}},
+   {t:'有趣健谈的点子王',s:{2:3,10:1}},
+   {t:'神秘有深度的思考者',s:{7:3,11:1}}]},
+ {q:'恋爱中你更看重？',o:[
+   {t:'激情与新鲜感',s:{0:2,8:2}},
+   {t:'安全感与稳定',s:{1:3,3:1}},
+   {t:'精神共鸣与沟通',s:{6:2,10:2}},
+   {t:'灵魂深处的羁绊',s:{7:3,11:1}}]},
+ {q:'你的消费观偏向？',o:[
+   {t:'冲动型，喜欢就买',s:{0:2,4:2}},
+   {t:'注重品质和实用',s:{1:3,4:1}},
+   {t:'为体验和社交花钱',s:{6:2,2:2}},
+   {t:'极简，钱花在刀刃上',s:{9:3,10:1}}]},
+ {q:'面对冲突，你倾向于？',o:[
+   {t:'直接摊牌，当场解决',s:{0:2,4:2}},
+   {t:'回避，不想撕破脸',s:{6:3,11:1}},
+   {t:'冷战，观察对方',s:{7:3,9:1}},
+   {t:'理性沟通，找共识',s:{6:2,4:2}}]},
+ {q:'工作里你更偏好？',o:[
+   {t:'自由灵活，不受束缚',s:{8:3,10:1}},
+   {t:'清晰的规则和稳定节奏',s:{9:3,1:1}},
+   {t:'团队协作、与人互动',s:{6:2,2:2}},
+   {t:'深度钻研一件事',s:{7:3,4:1}}]},
+ {q:'你的创意通常来自？',o:[
+   {t:'天马行空的想象',s:{11:3,10:1}},
+   {t:'对现实的观察与改良',s:{4:3,1:1}},
+   {t:'与人碰撞出的火花',s:{2:3,4:1}},
+   {t:'强烈的情感体验',s:{3:2,7:2}}]},
+ {q:'你最害怕的是？',o:[
+   {t:'被束缚、失去自由',s:{8:3,10:1}},
+   {t:'不稳定、没有保障',s:{1:2,3:2}},
+   {t:'被忽视、没有存在感',s:{4:3,6:1}},
+   {t:'不被理解、孤独',s:{7:2,11:2}}]},
+ {q:'你的朋友圈风格是？',o:[
+   {t:'常发动态，爱晒生活',s:{4:3,2:1}},
+   {t:'潜水，偶尔点赞',s:{7:2,9:2}},
+   {t:'认真写长文分享见解',s:{10:3,4:1}},
+   {t:'发唯美的心情碎片',s:{11:3,6:1}}]},
+ {q:'学习新事物时，你？',o:[
+   {t:'上手快但难坚持',s:{0:2,2:2}},
+   {t:'慢，但钻得很深',s:{7:2,4:2}},
+   {t:'系统性地一步步来',s:{9:3,1:1}},
+   {t:'兴趣驱动，随性学',s:{8:2,11:2}}]},
+ {q:'你对规则的态度是？',o:[
+   {t:'该打破时就打破',s:{10:3,0:1}},
+   {t:'规则让世界有序',s:{9:3,4:1}},
+   {t:'看情况灵活变通',s:{6:3,2:1}},
+   {t:'规则也需要人情味',s:{3:2,11:2}}]},
+ {q:'你理想的生活节奏是？',o:[
+   {t:'热烈精彩，不无聊',s:{4:2,0:2}},
+   {t:'安稳踏实，有质感',s:{1:3,3:1}},
+   {t:'平衡自律，有规划',s:{4:2,6:2}},
+   {t:'随缘自在，随心走',s:{11:3,8:1}}]},
+ {q:'你更希望被人评价为？',o:[
+   {t:'勇敢、有冲劲',s:{0:3,8:1}},
+   {t:'可靠、让人安心',s:{1:2,9:2}},
+   {t:'聪明、有趣',s:{2:3,10:1}},
+   {t:'温柔、体贴',s:{3:2,11:2}}]},
+ {q:'旅行你更偏好的方式是？',o:[
+   {t:'说走就走的探险',s:{8:3,0:1}},
+   {t:'提前做好详细攻略',s:{4:2,9:2}},
+   {t:'度假躺平享受',s:{1:3,6:1}},
+   {t:'小众文艺深度游',s:{11:2,7:2}}]},
+ {q:'你处理负面情绪的方式是？',o:[
+   {t:'发泄出来，运动或大声说出来',s:{0:2,4:2}},
+   {t:'自己消化，不给人添麻烦',s:{7:2,9:2}},
+   {t:'找人倾诉聊出来',s:{2:2,6:2}},
+   {t:'写下来或创作表达',s:{11:3,10:1}}]},
+ {q:'你眼中的"成功"更接近？',o:[
+   {t:'活出自我、足够自由',s:{10:2,8:2}},
+   {t:'有地位、被认可',s:{4:3,9:1}},
+   {t:'家庭安稳幸福',s:{3:3,1:1}},
+   {t:'把一件事做到极致',s:{4:2,7:2}}]},
+ {q:'聚会里你通常扮演？',o:[
+   {t:'活跃气氛的中心人物',s:{4:3,2:1}},
+   {t:'安静观察、和少数人深聊',s:{7:2,10:2}},
+   {t:'忙前忙后照顾大家',s:{3:2,4:2}},
+   {t:'随缘来去，自在就好',s:{8:2,6:2}}]},
+ {q:'你对"承诺"的态度是？',o:[
+   {t:'一口答应、说到做到',s:{0:2,4:2}},
+   {t:'谨慎答应，但极重诺',s:{9:3,1:1}},
+   {t:'看心情和缘分',s:{11:2,10:2}},
+   {t:'不喜欢被承诺绑住',s:{8:3,2:1}}]},
+ {q:'你更容易被什么样的人吸引？',o:[
+   {t:'自信有冲劲的人',s:{0:2,4:2}},
+   {t:'温柔懂你的人',s:{3:3,11:1}},
+   {t:'有思想、有深度的人',s:{7:2,10:2}},
+   {t:'有趣、新鲜的人',s:{2:3,6:1}}]},
+ {q:'你的书桌或手机界面通常？',o:[
+   {t:'有点乱但自己能找到',s:{8:2,0:2}},
+   {t:'整整齐齐、分门别类',s:{4:3,9:1}},
+   {t:'美观、有设计感',s:{6:3,1:1}},
+   {t:'随意，整洁不重要',s:{11:2,10:2}}]},
+ {q:'面对别人的批评，你？',o:[
+   {t:'当场反驳、据理力争',s:{0:2,4:2}},
+   {t:'表面平静，内心默默复盘',s:{7:3,9:1}},
+   {t:'认真反思自己哪里可改',s:{4:3,6:1}},
+   {t:'在意很久、情绪低落',s:{3:2,11:2}}]},
+ {q:'你更喜欢的表达方式是？',o:[
+   {t:'直来直去、不拐弯',s:{0:2,8:2}},
+   {t:'委婉、照顾对方面子',s:{6:3,3:1}},
+   {t:'用行动而非语言',s:{1:2,7:2}},
+   {t:'犀利但真诚',s:{10:2,7:2}}]},
+ {q:'你的时间观念是？',o:[
+   {t:'差不多就行',s:{11:2,8:2}},
+   {t:'严格守时',s:{9:3,4:1}},
+   {t:'弹性，但重要的事一定准时',s:{1:2,6:2}},
+   {t:'看状态',s:{2:2,10:2}}]},
+ {q:'你更相信什么？',o:[
+   {t:'行动能改变一切',s:{0:3,4:1}},
+   {t:'积累与坚持的力量',s:{9:3,1:1}},
+   {t:'缘分与感觉',s:{11:3,3:1}},
+   {t:'理性与证据',s:{4:3,10:1}}]},
+ {q:'你释放压力的方式是？',o:[
+   {t:'运动出汗',s:{0:2,8:2}},
+   {t:'吃好吃的或购物',s:{1:3,4:1}},
+   {t:'独处充电',s:{7:2,10:2}},
+   {t:'找人吐槽',s:{2:2,6:2}}]},
+ {q:'面对新朋友，你？',o:[
+   {t:'很快熟络、自来熟',s:{2:3,4:1}},
+   {t:'慢热，需要时间',s:{7:2,9:2}},
+   {t:'看眼缘，可能一见如故',s:{11:2,8:2}},
+   {t:'保持礼貌的距离感',s:{10:3,4:1}}]},
+ {q:'你希望人生留下什么？',o:[
+   {t:'轰轰烈烈的传奇',s:{4:2,0:2}},
+   {t:'踏实靠谱的口碑',s:{9:3,4:1}},
+   {t:'独特的思想印记',s:{10:3,7:1}},
+   {t:'温柔治愈的影响',s:{11:3,3:1}}]}
+];
+
+/* ---------- 状态与逻辑 ---------- */
+let mode='simple', cur=0, list=[], score=[], picked=-1, resultSign=null, top3=[];
+
+function start(m){
+  mode=m;
+  list = m==='simple' ? QUESTIONS.slice(0,10) : QUESTIONS.slice();
+  score = new Array(12).fill(0);
+  cur=0; picked=-1;
+  show('view-quiz');
+  renderQ();
+}
+function renderQ(){
+  const q=list[cur];
+  document.getElementById('qcount').textContent=(cur+1)+'/'+list.length;
+  document.getElementById('qnum').textContent='QUESTION '+String(cur+1).padStart(2,'0');
+  document.getElementById('qtext').textContent=q.q;
+  document.getElementById('progBar').style.width=((cur)/list.length*100)+'%';
+  const box=document.getElementById('opts'); box.innerHTML='';
+  const labels=['A','B','C','D'];
+  q.o.forEach((opt,i)=>{
+    const d=document.createElement('div');
+    d.className='opt'; d.dataset.i=i;
+    d.innerHTML='<div class="dot">'+labels[i]+'</div><div>'+opt.t+'</div>';
+    d.onclick=()=>choose(i);
+    box.appendChild(d);
+  });
+}
+function choose(i){
+  picked=i;
+  document.querySelectorAll('.opt').forEach((el,idx)=>el.classList.toggle('sel',idx===i));
+  const add=list[cur].o[i].s;
+  for(const k in add) score[+k]+=add[k];
+  setTimeout(()=>{
+    if(cur<list.length-1){cur++;renderQ();}
+    else finish();
+  },360);
+}
+function finish(){
+  document.getElementById('progBar').style.width='100%';
+  const arr=score.map((v,i)=>({i,v})).sort((a,b)=>b.v-a.v);
+  const total=score.reduce((a,b)=>a+b,0)||1;
+  top3=arr.slice(0,3).map(o=>({sign:SIGNS[o.i],pct:Math.round(o.v/total*100)}));
+  resultSign=SIGNS[arr[0].i];
+  renderResult();
+  show('view-result');
+}
+function renderResult(){
+  const s=resultSign, ec=ELEM_COLOR[s.elem];
+  const chips=s.traits.map(t=>'<span class="chip">'+t+'</span>').join('');
+  const bars=top3.map(t=>'<div class="bar"><span class="nm">'+t.sign.name+'</span><span class="track"><i style="background:linear-gradient(90deg,'+ec[0]+','+ec[1]+')" data-w="'+t.pct+'"></i></span><span class="pc">'+t.pct+'%</span></div>').join('');
+  document.getElementById('rCard').innerHTML=
+    '<div class="r-sym" style="background:linear-gradient(120deg,'+ec[0]+','+ec[1]+');-webkit-background-clip:text;background-clip:text;color:transparent">'+s.sym+'</div>'+
+    '<div class="r-name">'+s.name+'</div>'+
+    '<div class="r-en">'+s.en+'</div>'+
+    '<div class="r-meta"><span class="tag e" style="background:linear-gradient(120deg,'+ec[0]+','+ec[1]+')">'+s.elem+'象星座</span><span class="tag">'+s.date+'</span></div>'+
+    '<p class="r-desc">'+s.desc+'</p>'+
+    '<div class="r-sec"><h4>你的星座关键词</h4><div class="chips">'+chips+'</div></div>'+
+    '<div class="r-sec"><h4>匹配度 Top 3</h4><div class="bars">'+bars+'</div></div>'+
+    '<div class="r-sec"><h4>给你的小建议</h4><div class="advice">'+s.advice+'</div></div>';
+  requestAnimationFrame(()=>setTimeout(()=>{
+    document.querySelectorAll('#rCard .bar>i').forEach(b=>b.style.width=b.dataset.w+'%');
+  },120));
+}
+function show(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+}
+function goHome(){show('view-home');}
+
+/* ---------- 星座卡片生成（canvas 下载）---------- */
+function downloadCard(){
+  const s=resultSign, ec=ELEM_COLOR[s.elem];
+  const W=1080,H=1350,c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d');
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#0b0e1a');g.addColorStop(1,'#1b2150');
+  x.fillStyle=g;x.fillRect(0,0,W,H);
+  x.strokeStyle='rgba(255,255,255,.06)';x.lineWidth=2;
+  for(let r=120;r<700;r+=60){x.beginPath();x.arc(W/2,H/2,r,0,Math.PI*2);x.stroke();}
+  x.fillStyle='#e9c46a';x.font='600 30px sans-serif';x.textAlign='center';
+  x.fillText('ZODIAC · 星座人格测试',W/2,90);
+  const sg=x.createLinearGradient(W/2-200,200,W/2+200,500);sg.addColorStop(0,ec[0]);sg.addColorStop(1,ec[1]);
+  x.fillStyle=sg;x.font='320px serif';x.fillText(s.sym,W/2,560);
+  x.fillStyle='#fff';x.font='800 64px sans-serif';x.fillText(s.name,W/2,650);
+  x.fillStyle='#9aa3c7';x.font='500 28px sans-serif';x.fillText(s.en.toUpperCase()+'  ·  '+s.elem+'象星座  ·  '+s.date,W/2,700);
+  x.fillStyle='#d7dcf5';x.font='30px sans-serif';
+  wrapText(x,s.desc,W/2,770,W-160,46);
+  x.fillStyle='#e9c46a';x.font='600 28px sans-serif';x.fillText('关键词：'+s.traits.join(' / '),W/2,1180);
+  x.fillStyle='#6b7396';x.font='24px sans-serif';x.fillText('测一测你更符合哪个星座',W/2,H-60);
+  const a=document.createElement('a');
+  a.download='星座卡片_'+s.name+'.png';
+  a.href=c.toDataURL('image/png');a.click();
+  toast('星座卡片已保存 ✓');
+}
+function wrapText(ctx,text,cx,y,maxW,lh){
+  const chars=text.split('');let line='',yy=y;
+  for(const ch of chars){
+    if(ctx.measureText(line+ch).width>maxW){ctx.fillText(line,cx,yy);line=ch;yy+=lh;}
+    else line+=ch;
+  }
+  ctx.fillText(line,cx,yy);
+}
+
+/* ---------- 星空 & 首页星座环 ---------- */
+(function(){
+  const sky=document.getElementById('stars');
+  for(let i=0;i<70;i++){
+    const s=document.createElement('div');s.className='star';
+    const sz=Math.random()*2+1;
+    s.style.width=sz+'px';s.style.height=sz+'px';
+    s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';
+    s.style.animationDelay=(Math.random()*3)+'s';
+    sky.appendChild(s);
+  }
+  const wheel=document.getElementById('wheel');
+  const R=95;
+  SIGNS.forEach((s,i)=>{
+    const ang=(-90+i*30)*Math.PI/180;
+    const px=115+R*Math.cos(ang), py=115+R*Math.sin(ang);
+    const ec=ELEM_COLOR[s.elem];
+    const el=document.createElement('div');el.className='sym';
+    el.style.left=px+'px';el.style.top=py+'px';el.textContent=s.sym;
+    el.style.background='linear-gradient(120deg,'+ec[0]+','+ec[1]+')';
+    el.style.webkitBackgroundClip='text';el.style.backgroundClip='text';el.style.color='transparent';
+    wheel.appendChild(el);
+  });
+})();
+function toast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'),1800);
+}
+</script>
+</body>
+</html>
